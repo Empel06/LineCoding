@@ -2,15 +2,17 @@
 * File Name:   main.c
 *
 * Description:
-*   Receives data via SPI (slave) and encodes it as NRZ-I on P9_0
+*   Receives data via SPI and encodes it as NRZ-I on P9_0
 *
-* Flow:
+*   Flow:
 *   1. SPI Master sends data
 *   2. PSoC receives data via SPI slave
 *   3. Data is encoded to NRZ-I on P9_0
 *   4. P9_0 can be read by external device or logic analyzer
 *
-********************************************************************************/
+********************************************************************************
+* Copyright 2021-2024, Cypress Semiconductor Corporation
+*******************************************************************************/
 
 #include "cyhal.h"
 #include "cybsp.h"
@@ -21,12 +23,13 @@
 *******************************************************************************/
 #define PIN_NRZI_OUTPUT    P9_0        // NRZ-I encoded output
 #define BIT_DELAY_US       1000        // 1 kbps bit rate
-#define SPI_BUFFER_SIZE    8
+#define SPI_BUFFER_SIZE    32
 
-// SPI slave pins (CY8CPROTO-062-4343W Arduino header)
-#define PIN_SPI_MOSI   P6_0
-#define PIN_SPI_CLK    P6_2
-#define PIN_SPI_CS     P6_3
+// SPI pins (pas aan indien nodig)
+#define SPI_MOSI           P12_0
+#define SPI_MISO           P12_1
+#define SPI_SCLK           P12_2
+#define SPI_CS             P12_3
 
 /*******************************************************************************
 * Global Variables
@@ -37,7 +40,6 @@ volatile bool data_received = false;
 
 /*******************************************************************************
 * Function Name: spi_callback
-* Description: Callback called when SPI transfer completes
 *******************************************************************************/
 void spi_callback(void *arg, cyhal_spi_event_t event)
 {
@@ -49,7 +51,13 @@ void spi_callback(void *arg, cyhal_spi_event_t event)
 
 /*******************************************************************************
 * Function Name: encode_nrzi
-* Description: Encode received data as NRZ-I and output on P9_0
+********************************************************************************
+* Summary:
+*   Encodes data as NRZ-I and outputs on P9_0
+*
+* Parameters:
+*   data   - Data bytes to encode
+*   length - Number of bytes
 *******************************************************************************/
 void encode_nrzi(uint8_t *data, uint8_t length)
 {
@@ -57,17 +65,19 @@ void encode_nrzi(uint8_t *data, uint8_t length)
 
     printf("Encoding %d bytes to NRZ-I...\r\n", length);
 
-    for (uint8_t i = 0; i < length; i++)
+    for (int i = 0; i < length; i++)
     {
         uint8_t byte = data[i];
 
         // Process each bit (MSB first)
         for (int bit = 7; bit >= 0; bit--)
         {
-            if ((byte >> bit) & 0x01)
-                level = !level;  // Toggle on '1'
+            if ((byte >> bit) & 0x01)  // Bit is '1'
+            {
+                level = !level;         // Toggle level
+            }
+            // Bit is '0': keep level unchanged
 
-            // Output level
             cyhal_gpio_write(PIN_NRZI_OUTPUT, level);
             Cy_SysLib_DelayUs(BIT_DELAY_US);
         }
@@ -83,36 +93,28 @@ int main(void)
 {
     cy_rslt_t result;
 
-    /* Initialize board and enable global interrupts */
+    /* Initialize board */
     cybsp_init();
     __enable_irq();
 
-    /* Initialize UART for printf output */
+    /* Initialize UART */
     cy_retarget_io_init(CYBSP_DEBUG_UART_TX, CYBSP_DEBUG_UART_RX,
                         CY_RETARGET_IO_BAUDRATE);
 
     printf("\r\n=== NRZ-I Encoder ===\r\n");
-    printf("SPI slave on P6_0(MOSI), P6_2(CLK), P6_3(CS)\r\n");
-    printf("NRZ-I output on P9_0\r\n\r\n");
+    printf("SPI -> NRZ-I on P9_0\r\n\r\n");
 
     /* Configure NRZ-I output pin */
     cyhal_gpio_init(PIN_NRZI_OUTPUT, CYHAL_GPIO_DIR_OUTPUT,
                     CYHAL_GPIO_DRIVE_STRONG, false);
 
-    /* Initialize SPI as slave (no MISO) */
-    result = cyhal_spi_init(&spi_obj,
-                            PIN_SPI_MOSI,    // MOSI
-                            NC,              // MISO not used
-                            PIN_SPI_CLK,     // CLK
-                            PIN_SPI_CS,      // CS
-                            NULL,            // No rx buffer needed
-                            8,               // Data width
-                            CYHAL_SPI_MODE_00_MSB,
-                            true);           // Slave mode
+    /* Initialize SPI as slave */
+    result = cyhal_spi_init(&spi_obj, SPI_MOSI, SPI_MISO, SPI_SCLK,
+                            SPI_CS, NULL, 8, CYHAL_SPI_MODE_00_MSB, true);
 
     if (result != CY_RSLT_SUCCESS)
     {
-        printf("ERROR: SPI init failed (0x%08lx)\r\n", (unsigned long)result);
+        printf("ERROR: SPI init failed\r\n");
         CY_ASSERT(0);
     }
 
@@ -125,34 +127,29 @@ int main(void)
     /* Main loop */
     for (;;)
     {
-        /* Start SPI receive (async transfer) */
+        /* Start SPI receive */
         memset(spi_buffer, 0, SPI_BUFFER_SIZE);
-        result = cyhal_spi_transfer_async(&spi_obj, NULL, 0,
-                                          spi_buffer, SPI_BUFFER_SIZE);
-
-        if (result != CY_RSLT_SUCCESS)
-        {
-            printf("ERROR: SPI transfer failed\r\n");
-            Cy_SysLib_Delay(1000);
-            continue;
-        }
+        cyhal_spi_slave_read(&spi_obj, spi_buffer, SPI_BUFFER_SIZE);
 
         /* Wait for data */
-        while (!data_received){
-        	__WFI();  //CPU Sleep
-        }
+        while (!data_received)
+        {
             Cy_SysLib_Delay(10);
-
+        }
         data_received = false;
 
-        /* Calculate actual received data length */
+        /* Find actual data length */
         uint8_t len = 0;
-        for (uint8_t i = 0; i < SPI_BUFFER_SIZE; i++)
+        for (int i = 0; i < SPI_BUFFER_SIZE; i++)
+        {
             if (spi_buffer[i] != 0) len = i + 1;
+        }
 
         if (len > 0)
         {
             printf("Received %d bytes via SPI\r\n", len);
+
+            /* Encode to NRZ-I on P9_0 */
             encode_nrzi(spi_buffer, len);
         }
     }

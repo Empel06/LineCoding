@@ -138,9 +138,7 @@ int main(void)
         }
 
         /* Wait for data */
-        while (!data_received){
-        	__WFI();  //CPU Sleep
-        }
+        while (!data_received)
             Cy_SysLib_Delay(10);
 
         data_received = false;

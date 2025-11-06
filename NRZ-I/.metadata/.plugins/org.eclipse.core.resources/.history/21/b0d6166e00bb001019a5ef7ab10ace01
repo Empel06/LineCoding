@@ -21,7 +21,7 @@
 *******************************************************************************/
 #define PIN_NRZI_OUTPUT    P9_0        // NRZ-I encoded output
 #define BIT_DELAY_US       1000        // 1 kbps bit rate
-#define SPI_BUFFER_SIZE    8
+#define SPI_BUFFER_SIZE    32
 
 // SPI slave pins (CY8CPROTO-062-4343W Arduino header)
 #define PIN_SPI_MOSI   P6_0
@@ -138,9 +138,7 @@ int main(void)
         }
 
         /* Wait for data */
-        while (!data_received){
-        	__WFI();  //CPU Sleep
-        }
+        while (!data_received)
             Cy_SysLib_Delay(10);
 
         data_received = false;
