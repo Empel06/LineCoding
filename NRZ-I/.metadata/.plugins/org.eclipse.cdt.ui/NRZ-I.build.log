@@ -1,0 +1,42 @@
+09:24:03 **** Incremental Build of configuration Debug for project NRZ-I ****
+"C:\\Users\\12302093\\ModusToolbox\\tools_3.4\\modus-shell\\bin\\make" CY_MAKE_IDE=eclipse CY_IDE_TOOLS_DIR=C:/Users/12302093/ModusToolbox/tools_3.4 CY_IDE_BT_TOOLS_DIR= -j12 build_proj 
+Tools Directory: C:/Users/12302093/ModusToolbox/tools_3.4
+Searching installed tools in progress...
+Searching installed tools complete
+INFO: Multiple tools versions were found in "/cygdrive/c/Users/12302093/ModusToolbox/tools_3.1 /cygdrive/c/Users/12302093/ModusToolbox/tools_3.2 /cygdrive/c/Users/12302093/ModusToolbox/tools_3.3 /cygdrive/c/Users/12302093/ModusToolbox/tools_3.4 C:/Users/12302093/ModusToolbox/tools_3.1 C:/Users/12302093/ModusToolbox/tools_3.2 C:/Users/12302093/ModusToolbox/tools_3.3 C:/Users/12302093/ModusToolbox/tools_3.4". This build is currently using "C:/Users/12302093/ModusToolbox/tools_3.4". Check that this is the correct version that should be used in this build. To stop seeing this message, set the CY_TOOLS_PATHS environment variable to the location of the tools directory. This can be done either as an environment variable or set in the application Makefile.
+NOTE: Using 'C:/Users/12302093/ModusToolbox/tools_3.4/ninja/ninja.exe' from PATH.
+Generating mtbninja data files...
+Generating mtbninja data complete...
+Toolchain validation: PASS
+Initializing build: mtb-example-empty-app Debug APP_CY8CPROTO-062-4343W GCC_ARM
+
+Prebuild operations complete
+# 0: Loading the application in directory 'C:/Users/12302093/DigitaleCommunicatie/NRZ-I'
+# 0: Loading the ModusToolbox Technology Packs and Early Access Packs
+# 0: Loading the tools information
+ninja: no work to do.
+==============================================================================
+= Build complete =
+==============================================================================
+
+   ---------------------------------------------------- 
+  | Section Name         |  Address      |  Size       | 
+   ---------------------------------------------------- 
+  | .cy_m0p_image        |  0x10000000   |  6352       | 
+  | .text                |  0x10002000   |  41400      | 
+  | .ARM.exidx           |  0x1000c1b8   |  8          | 
+  | .copy.table          |  0x1000c1c0   |  24         | 
+  | .zero.table          |  0x1000c1d8   |  8          | 
+  | .data                |  0x080022e0   |  1632       | 
+  | .cy_sharedmem        |  0x08002940   |  8          | 
+  | .noinit              |  0x08002948   |  228        | 
+  | .bss                 |  0x08002a2c   |  1852       | 
+  | .heap                |  0x08003168   |  1029784    | 
+   ---------------------------------------------------- 
+
+  Total Internal Flash (Available)          2097152    
+  Total Internal Flash (Utilized)           51272      
+
+
+09:24:06 Build Finished. 0 errors, 0 warnings. (took 3s.551ms)
+

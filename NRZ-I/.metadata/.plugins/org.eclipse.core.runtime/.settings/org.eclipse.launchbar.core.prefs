@@ -1,0 +1,14 @@
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/arch=x86_64
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/name=Local
+LaunchTargetManager/org.eclipse.launchbar.core.launchTargetType.local,Local/os=win32
+configDescList=org.eclipse.launchbar.core.descriptorType.default\:SPI_Master Attach (KitProg3_MiniProg4),org.eclipse.launchbar.core.descriptorType.default\:SPI_Master Debug (KitProg3_MiniProg4),org.eclipse.launchbar.core.descriptorType.default\:SPI_Master Erase Device (KitProg3_MiniProg4),org.eclipse.launchbar.core.descriptorType.default\:SPI_Master Program (KitProg3_MiniProg4),org.eclipse.launchbar.core.descriptorType.default\:NRZ-I Attach (KitProg3_MiniProg4),org.eclipse.launchbar.core.descriptorType.default\:NRZ-I Erase Device (KitProg3_MiniProg4),org.eclipse.launchbar.core.descriptorType.default\:NRZ-I Program (KitProg3_MiniProg4),org.eclipse.launchbar.core.descriptorType.default\:AMI Attach (KitProg3_MiniProg4),org.eclipse.launchbar.core.descriptorType.default\:AMI Erase Device (KitProg3_MiniProg4),org.eclipse.launchbar.core.descriptorType.default\:AMI Program (KitProg3_MiniProg4),org.eclipse.launchbar.core.descriptorType.default\:AMI Debug (KitProg3_MiniProg4),org.eclipse.launchbar.core.descriptorType.default\:NRZ-I Debug (KitProg3_MiniProg4)
+eclipse.preferences.version=1
+org.eclipse.launchbar.core.descriptorType.default\:AMI\ Attach\ (KitProg3_MiniProg4)/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:AMI\ Attach\ (KitProg3_MiniProg4)/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
+org.eclipse.launchbar.core.descriptorType.default\:AMI\ Debug\ (KitProg3_MiniProg4)/activeLaunchMode=debug
+org.eclipse.launchbar.core.descriptorType.default\:AMI\ Erase\ Device\ (KitProg3_MiniProg4)/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:NRZ-I\ Erase\ Device\ (KitProg3_MiniProg4)/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:SPI_Master\ Attach\ (KitProg3_MiniProg4)/activeLaunchMode=run
+org.eclipse.launchbar.core.descriptorType.default\:SPI_Master\ Attach\ (KitProg3_MiniProg4)/activeLaunchTarget=org.eclipse.launchbar.core.launchTargetType.local\:Local
+org.eclipse.launchbar.core.descriptorType.default\:SPI_Master\ Debug\ (KitProg3_MiniProg4)/activeLaunchMode=debug
+org.eclipse.launchbar.core.descriptorType.default\:SPI_Master\ Erase\ Device\ (KitProg3_MiniProg4)/activeLaunchMode=run

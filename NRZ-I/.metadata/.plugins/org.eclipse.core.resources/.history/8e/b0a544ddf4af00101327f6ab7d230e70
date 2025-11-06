@@ -1,0 +1,70 @@
+#include "cyhal.h"
+#include "cybsp.h"
+#include "cy_retarget_io.h"
+
+#define PIN_POS        P9_0     // Positieve lijn
+#define PIN_NEG        P9_1     // Negatieve lijn
+
+#define BIT_DELAY_US   100000   // 100 ms per bit
+#define PAUSE_MS       500
+
+// Voorbeeld-bitstream
+static const uint8_t bitstream[] = {1, 0, 1, 1, 0, 0, 1, 0};
+#define BITSTREAM_LEN  (sizeof(bitstream) / sizeof(bitstream[0]))
+
+int main(void)
+{
+    cybsp_init();
+    __enable_irq();
+
+    // Initialiseer printf via debug-UART
+    cy_retarget_io_init(CYBSP_DEBUG_UART_TX, CYBSP_DEBUG_UART_RX, CY_RETARGET_IO_BAUDRATE);
+    printf("Start bipolaire AMI lijncodering op P9_0 (+) en P9_1 (-)\r\n");
+
+    // Stel beide pinnen in als output, standaard laag (0V)
+    cyhal_gpio_init(PIN_POS, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, false);
+    cyhal_gpio_init(PIN_NEG, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, false);
+
+    bool positive = true; // bepaalt welke polariteit de volgende '1' krijgt
+
+    for (;;)
+    {
+        for (int i = 0; i < BITSTREAM_LEN; i++)
+        {
+            uint8_t bit = bitstream[i];
+
+            if (bit == 1)
+            {
+                // Wissel polariteit voor elke '1'
+                if (positive)
+                {
+                    cyhal_gpio_write(PIN_POS, true);
+                    cyhal_gpio_write(PIN_NEG, false);
+                    printf("1 → +V (POS actief)\r\n");
+                }
+                else
+                {
+                    cyhal_gpio_write(PIN_POS, false);
+                    cyhal_gpio_write(PIN_NEG, true);
+                    printf("1 → -V (NEG actief)\r\n");
+                }
+
+                positive = !positive; // polariteit omdraaien voor volgende '1'
+            }
+            else
+            {
+                // Geen spanning voor '0'
+                cyhal_gpio_write(PIN_POS, false);
+                cyhal_gpio_write(PIN_NEG, false);
+                printf("0 → geen puls\r\n");
+            }
+
+            Cy_SysLib_DelayUs(BIT_DELAY_US);
+        }
+
+        // Pauze voor herhaling
+        cyhal_gpio_write(PIN_POS, false);
+        cyhal_gpio_write(PIN_NEG, false);
+        Cy_SysLib_Delay(PAUSE_MS);
+    }
+}

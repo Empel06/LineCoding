@@ -1,0 +1,118 @@
+/*******************************************************************************
+* File Name:   main.c
+*
+* Description:
+*   Demonstrates NRZ-I (Non-Return-to-Zero Inverted) line coding on a GPIO pin.
+*   A fixed bitstream is transmitted using NRZ-I logic:
+*       - Bit '1' causes an inversion of the output level.
+*       - Bit '0' keeps the output level unchanged.
+*
+*   The encoded signal is output on P9_0, allowing observation via oscilloscope
+*   or logic analyzer.
+*
+* Related Document:
+*   See README.md for a detailed explanation of NRZ-I encoding.
+*
+********************************************************************************
+* Copyright 2021-2024,
+* Cypress Semiconductor Corporation (an Infineon company) or
+* an affiliate of Cypress Semiconductor Corporation. All rights reserved.
+*
+* Licensed under the terms of the End User License Agreement (EULA)
+* provided with the software package. Use of this software implies agreement
+* with the EULA terms.
+*
+* Disclaimer:
+*   THIS SOFTWARE IS PROVIDED AS-IS, WITHOUT ANY WARRANTY OF ANY KIND,
+*   EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+*   MERCHANTABILITY, AND FITNESS FOR A PARTICULAR PURPOSE.
+*******************************************************************************/
+
+/*******************************************************************************
+* Header Files
+*******************************************************************************/
+#include "cyhal.h"
+#include "cybsp.h"
+#include "cy_retarget_io.h"
+
+/*******************************************************************************
+* Macros
+*******************************************************************************/
+#define PIN_POS        P9_0       /**< GPIO output pin used for NRZ-I signal */
+#define BIT_DELAY_US   100000     /**< Bit duration: 100 ms per bit (100,000 µs) */
+#define PAUSE_MS       500        /**< Pause between bitstream repetitions */
+
+/*******************************************************************************
+* Global Variables
+*******************************************************************************/
+
+/* Example bitstream to be transmitted via NRZ-I encoding */
+static const uint8_t bitstream[] = {1, 0, 1, 1, 0, 0, 1, 0};
+#define BITSTREAM_LEN  (sizeof(bitstream) / sizeof(bitstream[0]))
+
+/*******************************************************************************
+* Function Name: main
+********************************************************************************
+* Summary:
+*   Entry point for the firmware application.
+*
+*   This function:
+*     1. Initializes the board and debug UART.
+*     2. Configures a GPIO pin for output.
+*     3. Transmits a predefined bitstream using NRZ-I encoding.
+*
+* Parameters:
+*   None
+*
+* Return:
+*   int (never returns under normal conditions)
+*
+*******************************************************************************/
+int main(void)
+{
+    /* Initialize the board and enable global interrupts */
+    cybsp_init();
+    __enable_irq();
+
+    /* Initialize retarget-io for printf via debug UART */
+    cy_retarget_io_init(CYBSP_DEBUG_UART_TX, CYBSP_DEBUG_UART_RX, CY_RETARGET_IO_BAUDRATE);
+    printf("Starting NRZ-I line coding demonstration on P9_0\r\n");
+
+    /* Configure GPIO pin as strong output, starting LOW */
+    cyhal_gpio_init(PIN_POS, CYHAL_GPIO_DIR_OUTPUT, CYHAL_GPIO_DRIVE_STRONG, false);
+
+    bool current_level = false; /* Initial signal level: LOW */
+
+    for (;;)
+    {
+        printf("Transmitting bitstream...\r\n");
+
+        for (int i = 0; i < BITSTREAM_LEN; i++)
+        {
+            uint8_t bit = bitstream[i];
+
+            if (bit == 1)
+            {
+                /* Bit '1': invert output level */
+                current_level = !current_level;
+                printf("Bit %d: 1 → toggle output to %d\r\n", i, current_level);
+            }
+            else
+            {
+                /* Bit '0': maintain current output level */
+                printf("Bit %d: 0 → hold level at %d\r\n", i, current_level);
+            }
+
+            /* Update the output pin to the current level */
+            cyhal_gpio_write(PIN_POS, current_level);
+
+            /* Hold the bit value for the defined period */
+            Cy_SysLib_DelayUs(BIT_DELAY_US);
+        }
+
+        /* Reset line to LOW and wait before next transmission */
+        cyhal_gpio_write(PIN_POS, false);
+        printf("Bitstream complete. Restarting in %d ms...\r\n\n", PAUSE_MS);
+        Cy_SysLib_Delay(PAUSE_MS);
+    }
+}
